@@ -28,36 +28,47 @@
           </el-card>
         </el-col>
       </el-row>
-      <el-form label-position="top" label-width="80px" >
-        <el-form-item label="姓名">
+      <el-form label-position="top" 
+               label-width="80px" 
+               :model="userInfo"
+               :rules='rule'
+               ref="user">
+        <el-form-item label="姓名"
+                      prop="name">
           <el-input 
-            placeholder="请输入收货人姓名">
+            placeholder="请输入收货人姓名"
+            v-model="userInfo.name">
           </el-input>
         </el-form-item>
-        <el-form-item label="手机号码">
+        <el-form-item label="手机号码"
+                      prop="phone">
           <el-input
-           placeholder="请输入11位手机号码">
+           placeholder="请输入11位手机号码"
+           v-model.number="userInfo.phone">
           </el-input>
         </el-form-item>
-        <el-form-item label="收货地址">
+        <el-form-item label="收货地址"
+                      prop="addresses">
           <el-input
            placeholder="请选择省市区"
            icon="arrow-right"
-           v-model='address'
+           v-model="userInfo.addresses"
            @click="showList">
           </el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="addressDetail">
           <el-input 
             type="textarea"
             :rows="4"
             resize="none"
-            placeholder="请填写详细收货地址" >
+            placeholder="请填写详细收货地址" 
+            v-model="userInfo.addressDetail">
         </el-input>
         </el-form-item>
         <el-form-item>
           <el-button 
-            type="primary">
+            type="primary"
+            @click='submitForm'>
             申请试用
           </el-button>
         </el-form-item>
@@ -81,20 +92,49 @@ export default {
     selectArea: SelectArea
   },
   data () {
+    let checkPhone = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('请输入手机号码'))
+      }
+      setTimeout(() => {
+        if (!Number.isInteger(value)) {
+          callback(new Error('请输入数字值'))
+        } else if (value.toString().length !== 11) {
+          callback(new Error('手机号码必须是11位'))
+        } else {
+          callback()
+        }
+      })
+    }
     return {
-      msg: 'Welcome to Your Vue.js App'
+      userInfo: {
+        name: '',
+        phone: '',
+        addresses: 'dd',
+        addressDetail: ''
+      },
+      rule: {
+        name: [
+          {required: true, message: '请输入用户名称', trigger: 'blur'}
+        ],
+        phone: [{
+          required: true, validator: checkPhone, trigger: 'blur'
+        }],
+        addresses: [
+          {required: true, message: '请选择省市区', trigger: 'blur'}
+        ]
+      }
     }
   },
   computed: {
     isShowList () {
-      return this.$store.getters.getIsShow
-    },
-    address () {
       let obj = this.$store.getters.getAddress
       if (obj) {
-        return obj.pros.label + '省' + obj.city.label + '市' + (obj.districts ? (obj.districts.label + '区') : '')
+        this.userInfo.addresses = obj.pros.label + '省' + obj.city.label + '市' + (obj.districts ? (obj.districts.label + '区') : '')
+      } else {
+        this.userInfo.addresses = ''
       }
-      return ''
+      return this.$store.getters.getIsShow
     }
   },
   methods: {
@@ -104,6 +144,15 @@ export default {
       } else {
         this.$store.commit('setIsShow', true)
       }
+    },
+    submitForm () {
+      this.$refs['user'].validate((valid) => {
+        if (valid) {
+          alert('submit!')
+        } else {
+          return false
+        }
+      })
     }
   }
 }
