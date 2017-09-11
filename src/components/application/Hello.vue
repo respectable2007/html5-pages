@@ -87,7 +87,7 @@ import SelectArea from './selectArea'
 setDPR()
 remChange()
 export default {
-  name: 'Hello',
+  name: 'H5',
   components: {
     selectArea: SelectArea
   },
@@ -148,8 +148,16 @@ export default {
     submitForm () {
       this.$refs['user'].validate((valid) => {
         if (valid) {
-          alert('submit!')
+          this.$message({
+            message: '您的申请已经提交\n我们将尽快为您发货',
+            type: 'success'
+          })
+          this.$refs['user'].resetFields()
         } else {
+          this.$message({
+            message: '您已经提交过申请\n请勿重复提交申请',
+            type: 'warning'
+          })
           return false
         }
       })
