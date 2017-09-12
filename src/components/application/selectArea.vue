@@ -1,573 +1,57 @@
 <template>
-	<div 
-		class="area"
-		:style="{ height: areaHeight + 'px' }">
-      <div 
-      	 class="select-area">
-      	 <div 
-          class="select-btns">
-      	 	<a 
-      	 	  href="javascript:;"
-      	 	  class="cancel"
-      	 	  @click='cancel'>
-  	 		    取消
-      	 	</a>
-      	 	<a 
-      	 	  href="javascript:;"
-      	 	  class="confirm"
-      	 	  @click='confirm'>
-  	 		    确定
-      	 	</a>
-      	 </div>
-         <div 
-          class="select-list">
-          <div
-            class='pros'>
-              <ul class="scroll-list"
-                  ref="pros">
-                <li v-for=" (item, index) in options"
-                    :class="{ active : index === pros }">
-                  {{item.label}}
-                </li>
-              </ul>
+	<transition name="picker-fade">
+    <div class="picker" @touchmove.prevent @click="cancel">
+      <transition name="picker-move">
+        <div class="picker-panel" @click.stop>
+          <div class="picker-choose border-bottom-1px">
+            <span class="cancel" @click="cancel">取消</span>
+            <span class="confirm" @click="confirm">确定</span>
+            <h1 class="picker-title">地址选择</h1>
           </div>
-          <div
-            class='city'>
-              <ul class="scroll-list"
-                  ref="city">
-                <li v-for=" (item, index) in options[pros].children"
-                    :class="{ active : index === city }">
-                  {{item.label}}
-                </li>
-              </ul>
+          <div class="picker-content">
+            <div class="mask-top border-bottom-1px"></div>
+            <div class="mask-bottom border-top-1px"></div>
+            <div class="wheel-wrapper" ref="wheelWrapper">
+              <div class="wheel" v-for="data in pickerData">
+                <ul class="wheel-scroll">
+                  <li v-for="item in data" class="wheel-item">{{item.text}}</li>
+                </ul>
+              </div>
             </div>
-          <div
-            class='districts'>
-              <ul class="scroll-list"
-                  ref="districts">
-                <li v-for=" (item, index) in options[pros].children[city].children"
-                    :class="{ active : index === districts }">
-                  {{item.label}}
-                </li>
-              </ul>
-            </div>
-         </div>
-      </div>
-	</div>
+          </div>
+          <div class="picker-footer"></div>
+        </div>
+      </transition>
+    </div>
+  </transition>
 </template>
 <script >
-export default{
-  mounted () {
-    let that = this
-    this.areaHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-    var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize'
-    that.ratio = parseFloat(document.getElementsByTagName('html')[0].style.fontSize)
-    window.addEventListener(resizeEvt, function () {
-      that.areaHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-      that.ratio = parseFloat(document.getElementsByTagName('html')[0].style.fontSize)
-    })
-    this.$nextTick(() => {
-      this.bindScrollEvent()
-    })
-  },
+import BScroll from 'better-scroll'
+import { provinceList, cityList, areaList } from './areaData'
+export default {
   data () {
     return {
-      areaHeight: 0,
-      options: [{
-        value: 'zhinan',
-        label: '北京',
-        children: [{
-          value: 'shejiyuanze',
-          label: '设计原则',
-          children: [{
-            value: 'yizhi',
-            label: '一致'
-          }, {
-            value: 'fankui',
-            label: '反馈'
-          }, {
-            value: 'xiaolv',
-            label: '效率'
-          }, {
-            value: 'kekong',
-            label: '可控'
-          }]
-        }, {
-          value: 'daohang',
-          label: '北京',
-          children: [{
-            value: 'cexiangdaohang',
-            label: '东城区'
-          }, {
-            value: 'dingbudaohang',
-            label: '海淀区'
-          }]
-        }]
-      }, {
-        value: 'zujian',
-        label: '河北',
-        children: [{
-          value: 'bao ding',
-          label: '保定市',
-          children: [{
-            value: 'layout',
-            label: '徐水区'
-          }, {
-            value: 'color',
-            label: 'Color 色彩'
-          }, {
-            value: 'typography',
-            label: 'Typography 字体'
-          }, {
-            value: 'icon',
-            label: 'Icon 图标'
-          }, {
-            value: 'button',
-            label: 'Button 按钮'
-          }]
-        }, {
-          value: 'form',
-          label: 'Form',
-          children: [{
-            value: 'radio',
-            label: 'Radio 单选框'
-          }, {
-            value: 'checkbox',
-            label: 'Checkbox 多选框'
-          }, {
-            value: 'input',
-            label: 'Input 输入框'
-          }, {
-            value: 'input-number',
-            label: 'InputNumber 计数器'
-          }, {
-            value: 'select',
-            label: 'Select 选择器'
-          }, {
-            value: 'cascader',
-            label: 'Cascader 级联选择器'
-          }, {
-            value: 'switch',
-            label: 'Switch 开关'
-          }, {
-            value: 'slider',
-            label: 'Slider 滑块'
-          }, {
-            value: 'time-picker',
-            label: 'TimePicker 时间选择器'
-          }, {
-            value: 'date-picker',
-            label: 'DatePicker 日期选择器'
-          }, {
-            value: 'datetime-picker',
-            label: 'DateTimePicker 日期时间选择器'
-          }, {
-            value: 'upload',
-            label: 'Upload 上传'
-          }, {
-            value: 'rate',
-            label: 'Rate 评分'
-          }, {
-            value: 'form',
-            label: 'Form 表单'
-          }]
-        }, {
-          value: 'data',
-          label: 'Data',
-          children: [{
-            value: 'table',
-            label: 'Table 表格'
-          }, {
-            value: 'tag',
-            label: 'Tag 标签'
-          }, {
-            value: 'progress',
-            label: 'Progress 进度条'
-          }, {
-            value: 'tree',
-            label: 'Tree 树形控件'
-          }, {
-            value: 'pagination',
-            label: 'Pagination 分页'
-          }, {
-            value: 'badge',
-            label: 'Badge 标记'
-          }]
-        }, {
-          value: 'notice',
-          label: 'Notice',
-          children: [{
-            value: 'alert',
-            label: 'Alert 警告'
-          }, {
-            value: 'loading',
-            label: 'Loading 加载'
-          }, {
-            value: 'message',
-            label: 'Message 消息提示'
-          }, {
-            value: 'message-box',
-            label: 'MessageBox 弹框'
-          }, {
-            value: 'notification',
-            label: 'Notification 通知'
-          }]
-        }, {
-          value: 'navigation',
-          label: 'Navigation',
-          children: [{
-            value: 'menu',
-            label: 'NavMenu 导航菜单'
-          }, {
-            value: 'tabs',
-            label: 'Tabs 标签页'
-          }, {
-            value: 'breadcrumb',
-            label: 'Breadcrumb 面包屑'
-          }, {
-            value: 'dropdown',
-            label: 'Dropdown 下拉菜单'
-          }, {
-            value: 'steps',
-            label: 'Steps 步骤条'
-          }]
-        }, {
-          value: 'others',
-          label: 'Others',
-          children: [{
-            value: 'dialog',
-            label: 'Dialog 对话框'
-          }, {
-            value: 'tooltip',
-            label: 'Tooltip 文字提示'
-          }, {
-            value: 'popover',
-            label: 'Popover 弹出框'
-          }, {
-            value: 'card',
-            label: 'Card 卡片'
-          }, {
-            value: 'carousel',
-            label: 'Carousel 走马灯'
-          }, {
-            value: 'collapse',
-            label: 'Collapse 折叠面板'
-          }]
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '山东',
-        children: [{
-          value: 'axure',
-          label: '青岛'
-        }, {
-          value: 'sketch',
-          label: '济南'
-        }, {
-          value: 'jiaohu',
-          label: '潍坊'
-        }]
-      }, {
-        value: 'zhinan',
-        label: '山西',
-        children: [{
-          value: 'shejiyuanze',
-          label: '太原',
-          children: [{
-            value: 'yizhi',
-            label: '一致'
-          }, {
-            value: 'fankui',
-            label: '反馈'
-          }, {
-            value: 'xiaolv',
-            label: '效率'
-          }, {
-            value: 'kekong',
-            label: '可控'
-          }]
-        }, {
-          value: 'daohang',
-          label: '导航',
-          children: [{
-            value: 'cexiangdaohang',
-            label: '侧向导航'
-          }, {
-            value: 'dingbudaohang',
-            label: '顶部导航'
-          }]
-        }]
-      }, {
-        value: 'zujian',
-        label: '陕西',
-        children: [{
-          value: 'basic',
-          label: '西安',
-          children: [{
-            value: 'layout',
-            label: 'Layout 布局'
-          }, {
-            value: 'color',
-            label: 'Color 色彩'
-          }, {
-            value: 'typography',
-            label: 'Typography 字体'
-          }, {
-            value: 'icon',
-            label: 'Icon 图标'
-          }, {
-            value: 'button',
-            label: 'Button 按钮'
-          }]
-        }, {
-          value: 'form',
-          label: 'Form',
-          children: [{
-            value: 'radio',
-            label: 'Radio 单选框'
-          }, {
-            value: 'checkbox',
-            label: 'Checkbox 多选框'
-          }, {
-            value: 'input',
-            label: 'Input 输入框'
-          }, {
-            value: 'input-number',
-            label: 'InputNumber 计数器'
-          }, {
-            value: 'select',
-            label: 'Select 选择器'
-          }, {
-            value: 'cascader',
-            label: 'Cascader 级联选择器'
-          }, {
-            value: 'switch',
-            label: 'Switch 开关'
-          }, {
-            value: 'slider',
-            label: 'Slider 滑块'
-          }, {
-            value: 'time-picker',
-            label: 'TimePicker 时间选择器'
-          }, {
-            value: 'date-picker',
-            label: 'DatePicker 日期选择器'
-          }, {
-            value: 'datetime-picker',
-            label: 'DateTimePicker 日期时间选择器'
-          }, {
-            value: 'upload',
-            label: 'Upload 上传'
-          }, {
-            value: 'rate',
-            label: 'Rate 评分'
-          }, {
-            value: 'form',
-            label: 'Form 表单'
-          }]
-        }, {
-          value: 'data',
-          label: 'Data',
-          children: [{
-            value: 'table',
-            label: 'Table 表格'
-          }, {
-            value: 'tag',
-            label: 'Tag 标签'
-          }, {
-            value: 'progress',
-            label: 'Progress 进度条'
-          }, {
-            value: 'tree',
-            label: 'Tree 树形控件'
-          }, {
-            value: 'pagination',
-            label: 'Pagination 分页'
-          }, {
-            value: 'badge',
-            label: 'Badge 标记'
-          }]
-        }, {
-          value: 'notice',
-          label: 'Notice',
-          children: [{
-            value: 'alert',
-            label: 'Alert 警告'
-          }, {
-            value: 'loading',
-            label: 'Loading 加载'
-          }, {
-            value: 'message',
-            label: 'Message 消息提示'
-          }, {
-            value: 'message-box',
-            label: 'MessageBox 弹框'
-          }, {
-            value: 'notification',
-            label: 'Notification 通知'
-          }]
-        }, {
-          value: 'navigation',
-          label: 'Navigation',
-          children: [{
-            value: 'menu',
-            label: 'NavMenu 导航菜单'
-          }, {
-            value: 'tabs',
-            label: 'Tabs 标签页'
-          }, {
-            value: 'breadcrumb',
-            label: 'Breadcrumb 面包屑'
-          }, {
-            value: 'dropdown',
-            label: 'Dropdown 下拉菜单'
-          }, {
-            value: 'steps',
-            label: 'Steps 步骤条'
-          }]
-        }, {
-          value: 'others',
-          label: 'Others',
-          children: [{
-            value: 'dialog',
-            label: 'Dialog 对话框'
-          }, {
-            value: 'tooltip',
-            label: 'Tooltip 文字提示'
-          }, {
-            value: 'popover',
-            label: 'Popover 弹出框'
-          }, {
-            value: 'card',
-            label: 'Card 卡片'
-          }, {
-            value: 'carousel',
-            label: 'Carousel 走马灯'
-          }, {
-            value: 'collapse',
-            label: 'Collapse 折叠面板'
-          }]
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '宁夏',
-        children: [{
-          value: 'axure',
-          label: '银川'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '内蒙古',
-        children: [{
-          value: 'axure',
-          label: '呼和浩特'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '辽宁',
-        children: [{
-          value: 'axure',
-          label: '沈阳'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '吉林',
-        children: [{
-          value: 'axure',
-          label: '长春'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '黑龙江',
-        children: [{
-          value: 'axure',
-          label: '哈尔滨'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '江苏',
-        children: [{
-          value: 'axure',
-          label: '南京'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '安徽',
-        children: [{
-          value: 'axure',
-          label: '合肥'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }, {
-        value: 'ziyuan',
-        label: '浙江',
-        children: [{
-          value: 'axure',
-          label: '杭州'
-        }, {
-          value: 'sketch',
-          label: 'Sketch Templates'
-        }, {
-          value: 'jiaohu',
-          label: '组件交互文档'
-        }]
-      }],
-      pros: 0,
-      city: 0,
-      districts: 0,
-      ratio: 0
+      tempIndex: [0, 0, 0],
+      pickerData: []
     }
   },
-  computed: {
-    address () {
-      let pros = this.options[this.pros]
-      let city = pros.children[this.city] ? pros.children[this.city] : pros.children[0]
-      let districts = city.children ? city.children[this.districts] : ''
-      return {
-        pros: pros,
-        city: city,
-        districts: districts
+  mounted () {
+    if (!this.wheels) {
+      this.$nextTick(() => {
+        this.wheels = []
+        let wheelWrapper = this.$refs.wheelWrapper
+        for (let i = 0; i < this.pickerData.length; i++) {
+          this.creatWheel(wheelWrapper, i)
+        }
+      })
+    }
+  },
+  watch: {
+    pickerData (val) {
+      if (this.wheels) {
+        for (let i = 0; i < val.length; i++) {
+          this.wheels[i].refresh()
+        }
       }
     }
   },
@@ -577,106 +61,152 @@ export default{
     },
     confirm () {
       this.$store.commit('setIsShow', false)
-      this.$store.commit('setAddress', this.address)
+      this.$store.commit('setAddress', {
+        pros: this.pickerData[0][this.tempIndex[0]],
+        city: this.pickerData[1][this.tempIndex[1]],
+        districts: this.pickerData[2][this.tempIndex[2]]
+      })
     },
-    bindScrollEvent () {
-      const bindFuntion = (type) => {
-        this.$refs[`${type}`].onscroll = (e) => this.handleScroll(type, e)
-      }
-      bindFuntion('pros')
-      bindFuntion('city')
-      bindFuntion('districts')
+    getData () {
+      const provinces = provinceList
+      const cities = cityList[provinces[this.tempIndex[0]].value]
+      const areas = areaList[cities[this.tempIndex[1]].value]
+      this.pickerData = [provinces, cities, areas]
     },
-    handleScroll (type, e) {
-      this[type] = Math.min(Math.floor((e.target.scrollTop) / (0.32 * this.ratio)), Math.floor((e.target.scrollTop) / (0.32 * this.ratio) + 1))
+    creatWheel (wheelWrapper, i) {
+      this.wheels[i] = new BScroll(wheelWrapper.children[i], {
+        wheel: {
+          selectedIndex: 0,
+          rotate: 2,
+          adjustTime: 400
+        },
+        probeType: 3
+      })
+      this.wheels[i].on('scrollEnd', () => {
+        this.tempIndex[i] = this.wheels[i].getSelectedIndex()
+        this.getData()
+      })
+      return this.wheels[i]
     }
+  },
+  created () {
+    this.getData()
   }
 }
 </script>
 <style scoped>
-	.area{
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		background: rgba(0,0,0,0.3);
-		top: 0;
-	}
-	.select-area{
-		height: 3rem;
-		background: rgb(237,237,237);
-		width: 100%;
-		bottom: 0;
-    position: absolute;
-	}
-	.select-btns{
-		font-size: 0.16rem;
-		padding:0.1rem;
-		color:#2c3e50;
-	}
-	.select-btns a{
-		text-decoration: none;
-		color:#2c3e50;
-	}
-	.select-btns .cancel{
-		float: left;
-	}
-	.select-btns .confirm{
-		float: right;
-	}
-  .select-list{
-    position: absolute;
-    font-size: 0.16rem;
-    top:0.36rem;
-    width: 100%;
-    bottom: 0;
-  }
-  .select-list div{
-    float: left;
-    width: 33.33%;
-    height: 100%;
-    position: relative;
-    background: rgb(237,237,237);
-  }
-  .select-list:after,.select-list:before{
-    content: "";
-    top: 50%;
-    color: #fff;
-    position: absolute;
-    line-height: 0.16rem;
-    border-top:1px solid gray;
-    border-bottom:1px solid gray;
-    height: 0.32rem;
-    z-index: 0;
+	.picker{
+    position: fixed;
     left: 0;
-    right: 0;
-    box-sizing: border-box;
-    padding:0.06rem 0;
-    text-align: left;
-  }
-  .scroll-list{
-    overflow-y: auto;
+    top: 0;
+    z-index: 100;
+    width: 100%;
     height: 100%;
-    margin-right: -17px;
-    overflow-x: hidden;
+    overflow: hidden;
+    text-align: center;
+    font-size: 15px;
+    background-color: rgba(37,38,45,0.4);
   }
-  .scroll-list:before{
-    content: "";
-    height: 1.32rem;
-    display: block;
+  .picker-fade-enter, .picker-fade-leave-active{
+    opacity: 0;
+  }
+  .picker-fade-enter-active, .picker-fade-leave-active{
+    transition: all .3s ease-in-out;
+  }
+  .picker-panel{
+    position: absolute;
+    z-index: 600;
+    bottom: 0;
     width: 100%;
+    height: 273px;
+    background: white;
   }
-  .scroll-list:after{
-    content: "";
-    height: 1.04rem;
-    display: block;
-    width: 100%;
+  .picker-move-enter, .picker-move-leave-active{
+    transform: translate3d(0, 273px, 0);
   }
-  .scroll-list li{
-    display: block;
-    height: 0.32rem;
-    line-height: 0.32rem;
+  .picker-move-enter-active, .picker-move-leave-active{
+    transition: all .3s ease-in-out;
   }
-  .scroll-list li.active{
+  .picker-choose{
+    position: relative;
+    height: 60px;
+    color: grey;
+  }
+  .picker-title{
+    margin: 0;
+    line-height: 60px;
+    font-weight: normal;
+    text-align: center;
+    font-size: 15px;
+    color: grey;
+  }
+  .confirm, .cancel{
+    position: absolute;
+    top: 6px;
+    padding: 16px;
+    font-size: 15px;
+  }
+  .confirm{
+    right: 0;
     color: red;
+  }
+  .confirm.active{
+    color: red;
+  }
+  .cancel{
+    left: 0;
+  }
+  .cancel.active{
+    color:gray;
+  }
+  .picker-content{
+    position: relative;
+    top: 20px;
+  }
+  .mask-top, .mask-bottom{
+    z-index: 10;
+    width: 100%;
+    height: 68px;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+  .mask-top{
+    position: absolute;
+    top: 0;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.8));
+    border-bottom: 1px solid #eee;
+  }
+  .mask-bottom{
+    position: absolute;
+    bottom: 1px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.8));
+    border-top: 1px solid #eee;
+  }
+  .wheel-wrapper{
+    display: flex;
+    padding: 0 16px;
+  }
+  .wheel{
+    /*flex-fix();*/
+    height: 173px;
+    overflow: hidden;
+    font-size: 18px;
+    width:33%;
+  }
+  .wheel-scroll{
+    padding: 0;
+    margin-top: 68px;
+    line-height: 36px;
+    list-style: none;
+  }
+  .wheel-item{
+    list-style: none;
+    height: 36px;
+    overflow: hidden;
+    white-space: nowrap;
+    color: grey;
+  }
+  .picker-footer{
+    height: 20px;
   }
 </style>

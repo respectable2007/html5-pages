@@ -128,9 +128,10 @@ export default {
   },
   computed: {
     isShowList () {
+      // 若computed中定义的参数未在html中调用，则不会进行实时计算
       let obj = this.$store.getters.getAddress
       if (obj) {
-        this.userInfo.addresses = obj.pros.label + '省' + obj.city.label + '市' + (obj.districts ? (obj.districts.label + '区') : '')
+        this.userInfo.addresses = obj.pros.text + obj.city.text + (obj.districts ? (obj.districts.text) : '')
       } else {
         this.userInfo.addresses = ''
       }

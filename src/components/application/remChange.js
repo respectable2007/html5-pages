@@ -10,6 +10,7 @@ export function setDPR () {
     viewport.setAttribute('content', 'width=device-width,initial-scale=0.3333333333333333, maximum-scale=0.3333333333333333, minimum-scale=0.3333333333333333, user-scalable=no')
   }
 }
+// rem布局计算比例
 export function remChange () {
   var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize'
   var widthProportion = function () {
