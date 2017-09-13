@@ -74,10 +74,8 @@
         </el-form-item>
       </el-form>
     </div>
-    <selectArea
-         v-show="isShowList"
-         >
-    </selectArea>
+    <selectArea ref="area"
+                @select="handleSelect"></selectArea>
   </div>
 </template>
 
@@ -110,7 +108,7 @@ export default {
       userInfo: {
         name: '',
         phone: '',
-        addresses: 'dd',
+        addresses: '',
         addressDetail: ''
       },
       rule: {
@@ -126,24 +124,16 @@ export default {
       }
     }
   },
-  computed: {
-    isShowList () {
-      // 若computed中定义的参数未在html中调用，则不会进行实时计算
-      let obj = this.$store.getters.getAddress
+  methods: {
+    showList () {
+      let area = this.$refs['area']
+      area.show()
+    },
+    handleSelect (obj) {
       if (obj) {
         this.userInfo.addresses = obj.pros.text + obj.city.text + (obj.districts ? (obj.districts.text) : '')
       } else {
         this.userInfo.addresses = ''
-      }
-      return this.$store.getters.getIsShow
-    }
-  },
-  methods: {
-    showList () {
-      if (this.isShowList) {
-        this.$store.commit('setIsShow', false)
-      } else {
-        this.$store.commit('setIsShow', true)
       }
     },
     submitForm () {

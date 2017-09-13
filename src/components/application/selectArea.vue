@@ -1,6 +1,9 @@
 <template>
 	<transition name="picker-fade">
-    <div class="picker" @touchmove.prevent @click="cancel">
+    <div class="picker" 
+         @touchmove.prevent 
+         @click="cancel"
+         v-show="state===1">
       <transition name="picker-move">
         <div class="picker-panel" @click.stop>
           <div class="picker-choose border-bottom-1px">
@@ -9,8 +12,8 @@
             <h1 class="picker-title">地址选择</h1>
           </div>
           <div class="picker-content">
-            <div class="mask-top border-bottom-1px"></div>
-            <div class="mask-bottom border-top-1px"></div>
+            <div class="mask-top"></div>
+            <div class="mask-bottom"></div>
             <div class="wheel-wrapper" ref="wheelWrapper">
               <div class="wheel" v-for="data in pickerData">
                 <ul class="wheel-scroll">
@@ -32,18 +35,8 @@ export default {
   data () {
     return {
       tempIndex: [0, 0, 0],
-      pickerData: []
-    }
-  },
-  mounted () {
-    if (!this.wheels) {
-      this.$nextTick(() => {
-        this.wheels = []
-        let wheelWrapper = this.$refs.wheelWrapper
-        for (let i = 0; i < this.pickerData.length; i++) {
-          this.creatWheel(wheelWrapper, i)
-        }
-      })
+      pickerData: [],
+      state: 0
     }
   },
   watch: {
@@ -57,15 +50,39 @@ export default {
   },
   methods: {
     cancel () {
-      this.$store.commit('setIsShow', false)
+      this.state = 0
+      // this.$store.commit('setIsShow', false)
     },
     confirm () {
-      this.$store.commit('setIsShow', false)
-      this.$store.commit('setAddress', {
+      this.state = 0
+      // this.$store.commit('setIsShow', false)
+      this.$emit('select', {
         pros: this.pickerData[0][this.tempIndex[0]],
         city: this.pickerData[1][this.tempIndex[1]],
         districts: this.pickerData[2][this.tempIndex[2]]
       })
+      // this.$store.commit('setAddress', {
+      //   pros: this.pickerData[0][this.tempIndex[0]],
+      //   city: this.pickerData[1][this.tempIndex[1]],
+      //   districts: this.pickerData[2][this.tempIndex[2]]
+      // })
+    },
+    show () {
+      this.state = 1
+      if (!this.wheels) {
+        this.$nextTick(() => {
+          this.wheels = []
+          let wheelWrapper = this.$refs.wheelWrapper
+          for (let i = 0; i < this.pickerData.length; i++) {
+            this.creatWheel(wheelWrapper, i)
+          }
+        })
+      } else {
+        for (let i = 0; i < this.pickerData.length; i++) {
+          this.wheels[i].enable()
+          this.wheels[i].wheelTo(this.tempIndex[i])
+        }
+      }
     },
     getData () {
       const provinces = provinceList
@@ -187,7 +204,6 @@ export default {
     padding: 0 16px;
   }
   .wheel{
-    /*flex-fix();*/
     height: 173px;
     overflow: hidden;
     font-size: 18px;
